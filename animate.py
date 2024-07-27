@@ -87,6 +87,11 @@ def format_date(date):
 # Ensure the output directory exists
 output_dir = 'svg_frames'
 os.makedirs(output_dir, exist_ok=True)
+os.makedirs(f'{output_dir}/event', exist_ok=True)
+os.makedirs(f'{output_dir}/non-event', exist_ok=True)
+
+# Dictionary to keep track of saved frames
+saved_frames = {}
 
 # Function to draw the bar chart for each frame
 def update(frame):
@@ -131,10 +136,13 @@ def update(frame):
     else:
         ax.set_xlim(0, 15)
 
-    # Save the current frame as an SVG file
-    frame_filename = f"{output_dir}/frame_{update.frame_counter:04d}.svg"
-    fig.savefig(frame_filename, format='svg', transparent=True)
-    update.frame_counter += 1
+    if key not in saved_frames:
+        # Save the current frame as an SVG file
+        frame_filename = f"{output_dir}/{'event' if is_event else 'non-event'}/{date.strftime('%Y-%m-%d')}_part{part}.svg"
+        fig.savefig(frame_filename, format='svg', transparent=True)
+        
+        # Mark the frame as saved
+        saved_frames[key] = frame_filename
 
 update.frame_counter = 0
 
