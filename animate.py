@@ -43,8 +43,6 @@ for date, part, file in file_info:
 
 # Set up the plot
 fig, ax = plt.subplots(figsize=(10, 6))
-fig.patch.set_alpha(0.0)  # Set the figure background to transparent
-ax.patch.set_alpha(0.0)  # Set the axis background to transparent
 plt.subplots_adjust(left=0.25, bottom=0.35)  # Add padding to the left and bottom
 
 # Load the Roboto font
@@ -138,11 +136,15 @@ def update(frame):
 
     if key not in saved_frames:
         # Save the current frame as an SVG file
+        fig.patch.set_alpha(0.0)  # Set the figure background to transparent
+        ax.patch.set_alpha(0.0)  # Set the axis background to transparent
         frame_filename = f"{output_dir}/{'event' if is_event else 'non-event'}/{date.strftime('%Y-%m-%d')}_part{part}.svg"
         fig.savefig(frame_filename, format='svg', transparent=True)
         
         # Mark the frame as saved
         saved_frames[key] = frame_filename
+        fig.patch.set_alpha(1.0)  # Set the figure background to transparent
+        ax.patch.set_alpha(1.0)  # Set the axis background to transparent
 
 update.frame_counter = 0
 
