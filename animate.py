@@ -69,12 +69,13 @@ fig_height = fig.get_size_inches()[1]
 frames = []
 current_date = start_date
 while current_date <= end_date:
-    for t in range(regular_timestep_duration):  # Each day will stay for 'regular_timestep_duration' timesteps
-        frames.append((current_date, t, False))
     if not events_df[events_df['Date'] == current_date].empty:
         for part in events_df[events_df['Date'] == current_date]['Part'].unique():
             for t in range(event_timestep_duration):
                 frames.append((current_date, part, True))
+    else:
+        for t in range(regular_timestep_duration):  # Each day will stay for 'regular_timestep_duration' timesteps
+            frames.append((current_date, t, False))
     current_date += timedelta(days=1)
 
 # Function to format date in "20th of April 2024" format
@@ -83,9 +84,9 @@ def format_date(date):
 
 # Function to draw the bar chart for each frame
 def update(frame):
-    date, timestep, is_event = frame
+    date, part, is_event = frame
     ax.clear()
-    key = (date, 0 if is_event else timestep)
+    key = (date, 0 if not is_event else part)
     
     if key in dataframes:
         df = dataframes[key]
@@ -108,7 +109,7 @@ def update(frame):
     
     # Display the event description
     if is_event:
-        event_df = events_df[(events_df['Date'] == date) & (events_df['Part'] == timestep)]
+        event_df = events_df[(events_df['Date'] == date) & (events_df['Part'] == part)]
         if not event_df.empty:
             event = event_df['Event'].values[0]
             ax.text(0.5, -0.25, event, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=12, fontproperties=prop)
