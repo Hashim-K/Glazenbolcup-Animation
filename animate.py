@@ -43,6 +43,8 @@ for date, part, file in file_info:
 
 # Set up the plot
 fig, ax = plt.subplots(figsize=(10, 6))
+fig.patch.set_alpha(0.0)  # Set the figure background to transparent
+ax.patch.set_alpha(0.0)  # Set the axis background to transparent
 plt.subplots_adjust(left=0.25, bottom=0.35)  # Add padding to the left and bottom
 
 # Load the Roboto font
@@ -81,6 +83,10 @@ while current_date <= end_date:
 # Function to format date in "20th of April 2024" format
 def format_date(date):
     return date.strftime(f"{date.day}{'st' if date.day == 1 else 'nd' if date.day == 2 else 'rd' if date.day == 3 else 'th'} of %B %Y")
+
+# Ensure the output directory exists
+output_dir = 'svg_frames'
+os.makedirs(output_dir, exist_ok=True)
 
 # Function to draw the bar chart for each frame
 def update(frame):
@@ -124,6 +130,13 @@ def update(frame):
         ax.set_xlim(0, max(15, max_value * 1.1))  # Add some padding for better visibility
     else:
         ax.set_xlim(0, 15)
+
+    # Save the current frame as an SVG file
+    frame_filename = f"{output_dir}/frame_{update.frame_counter:04d}.svg"
+    fig.savefig(frame_filename, format='svg', transparent=True)
+    update.frame_counter += 1
+
+update.frame_counter = 0
 
 ani = animation.FuncAnimation(fig, update, frames=frames, repeat=False)
 
