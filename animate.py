@@ -53,7 +53,7 @@ start_date = datetime(int(YYYY), 4, 20)
 end_date = datetime(int(YYYY), 6, 17)
 
 # Variables for timestep duration
-regular_timestep_duration = 2
+regular_timestep_duration = 3
 event_timestep_duration = 10
 
 # Variables for padding in pixels
@@ -77,12 +77,16 @@ while current_date <= end_date:
                 frames.append((current_date, part, True))
     current_date += timedelta(days=1)
 
+# Function to format date in "20th of April 2024" format
+def format_date(date):
+    return date.strftime(f"{date.day}{'st' if date.day == 1 else 'nd' if date.day == 2 else 'rd' if date.day == 3 else 'th'} of %B %Y")
+
+# Function to draw the bar chart for each frame
 def update(frame):
     date, timestep, is_event = frame
     ax.clear()
     key = (date, 0 if is_event else timestep)
     
-    # Check if there is a new part for the current timestep
     if key in dataframes:
         df = dataframes[key]
     else:
@@ -90,16 +94,14 @@ def update(frame):
         if prev_key:
             df = dataframes[prev_key]
     
-    # Sorting the data by Total points (most points on top)
     df = df.sort_values(by='Total', ascending=True)
-    
-    # Plotting the stacked bar chart
     categories = ['Individual', 'Round 1', 'Round 2', 'Conf. final', 'Final']
     df.set_index('Name', inplace=True)
+
     df[categories].plot(kind='barh', stacked=True, ax=ax, color=['#4285f4', '#ea4335', '#fbbc04', '#34a853', '#ff6d01'])
     
-    # Set the date as the title
-    title = date.strftime('%Y-%m-%d')
+    # Set the formatted date as the title
+    title = format_date(date)
     ax.set_title(title, fontproperties=prop)
     ax.set_xlabel("Points", fontproperties=prop)
     ax.set_ylabel("Participants", fontproperties=prop)
@@ -110,12 +112,18 @@ def update(frame):
         if not event_df.empty:
             event = event_df['Event'].values[0]
             ax.text(0.5, -0.25, event, horizontalalignment='center', verticalalignment='center', transform=ax.transAxes, fontsize=12, fontproperties=prop)
-
+    
     # Set the legend to the bottom right corner
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles, labels, loc='lower right', bbox_to_anchor=(1, 0), fontsize=10, frameon=False)
+    
+    # Adjust x-axis limits
+    max_value = df[categories].sum(axis=1).max()
+    if max_value > 0:
+        ax.set_xlim(0, max(15, max_value * 1.1))  # Add some padding for better visibility
+    else:
+        ax.set_xlim(0, 15)
 
-# Create the animation
 ani = animation.FuncAnimation(fig, update, frames=frames, repeat=False)
 
 # Save the animation
